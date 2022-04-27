@@ -1,0 +1,26 @@
+body {
+    margin: 0;
+    padding: 0;
+    
+}
+
+.layout {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+}
+
+.board {
+    height: 600px;
+    width: 600px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap:1px;
+}
+
+.board>div {
+    background-color: blue;
+}
