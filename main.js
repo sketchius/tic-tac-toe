@@ -1,13 +1,38 @@
 
 
 
-const renderer = (function () {
+
+const game = (function () {
+
+})();
+
+
+
+const htmlInterface = (function () {
     const board = document.querySelector('.board');
     const cells = document.querySelectorAll('.cell');
 
-    // cells.forEach( function setText(cell) {
-    //     cell.textContent = 'test';
-    // } );
+    let clickEventHandler = null;
+
+    let name = 'test';
+
+    cells.forEach( setText );
+
+    function setText(cell) {
+        cell.addEventListener('click',handleClick);
+    }
+
+    function handleClick(e) {
+        if (clickEventHandler ) {
+            clickEventHandler(e.target);
+        }
+    }
+
+    function setEventHandler(eventHandlerFunction) {
+        clickEventHandler = eventHandlerFunction;
+    }
+
+
 
     function getCellByCoordinates(x,y) {
         const index = x + y*3;
@@ -15,18 +40,32 @@ const renderer = (function () {
         return cells[index];
     }
 
-    function markCell(x,y,color) {
+    function setCellState(x,y,state) {
         let cell = getCellByCoordinates(x,y);
 
-        cell.style.background = color;
+        switch (state) {
+            case 'X':
+                cell.style.backgroundImage = 'url("assets/X.svg")';
+                break;
+            case 'O':
+                cell.style.backgroundImage = 'url("assets/O.svg")';
+                break;
+            default: 
+                cell.style.backgroundImage = 'none';
+                break;
+        }
     }
 
-    return { markCell };
+    return { setCellState , setEventHandler };
 })();
 
 
 
-renderer.markCell(0,1,'red');
-renderer.markCell(0,0,'green');
-renderer.markCell(2,1,'yellow');
-renderer.markCell(2,2,'grey');
+
+
+
+let clicked = function (target) {
+    console.log(target);
+}
+
+htmlInterface.setEventHandler(clicked);
