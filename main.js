@@ -3,28 +3,109 @@
 
 
 const game = (function () {
+    let currentPlayer = 0;
 
+    let boardState = [
+        [0,0,0],
+        [0,0,0],
+        [0,0,0]
+    ]
+
+    let gameActive = true;
+
+    let renderFunction = null;
+
+    function attemptMove(x,y) {
+        if ( gameActive && boardState[x][y] == 0) {
+            debugger;
+            boardState[x][y] = currentPlayer + 1;
+            render(x,y);
+            switch (checkForEndOfGame()) {
+                case 0:
+
+                case 1:
+                    alert('X wins');
+                    gameActive = false;
+                    break;
+                case 2:
+                    alert('O wins');
+                    gameActive = false;
+                    break;
+                case -1:
+                    alert('Stalemate');
+                    gameActive = false;
+                    break;
+            }
+        }
+    }
+
+    function checkForEndOfGame() {
+        // Check for horizontal lines
+        for (let i = 0; i <= 2; i++) {
+            if (boardState[i][0] == boardState[i][1] && boardState[i][0] == boardState[i][2]) {
+                return boardState[i][0];
+            }    
+        }
+        // Check for vertical lines
+        for (let i = 0; i <= 2; i++) {
+            if (boardState[0][i] == boardState[1][i] && boardState[0][i] == boardState[2][i]) {
+                return boardState[0][i];
+            }    
+        }
+        // Check for diagonal lines
+        if (boardState[0][0] == boardState[1][1] && boardState[0][0] == boardState[2][2]) {
+            return boardState[0][0];
+        }
+        if (boardState[0][2] == boardState[1][1] && boardState[0][2] == boardState[2][0]) {
+            return boardState[0][2];
+        }
+        // Check for empty cells
+        for (let i = 0; i <= 2; i++) {
+            for (let j = 0; j <= 2; j++) {
+                if (boardState[i][j] == 0) {
+                    return 0;
+                }
+            }
+        }
+        //No empty cells -- stalemate
+        return -1;
+    }
+
+
+
+
+    function setRenderFunction(rFunction) {
+        renderFunction = rFunction;
+    }
+
+    function render(x,y) {
+        if (renderFunction) {
+            renderFunction(boardState[x][y],x,y);
+        }
+    }
+
+    return { attemptMove, setRenderFunction };
 })();
 
 
 
 const htmlInterface = (function () {
-    const board = document.querySelector('.board');
-    const cells = document.querySelectorAll('.cell');
+    const boardElement = document.querySelector('.board');
+    const cellElements = document.querySelectorAll('.cell');
 
     let clickEventHandler = null;
 
     let name = 'test';
 
-    cells.forEach( setText );
+    cellElements.forEach( addClickListener );
 
-    function setText(cell) {
+    function addClickListener(cell) {
         cell.addEventListener('click',handleClick);
     }
 
     function handleClick(e) {
         if (clickEventHandler ) {
-            clickEventHandler(e.target);
+            clickEventHandler(e.target.getAttribute('data-col'),e.target.getAttribute('data-row'));
         }
     }
 
@@ -35,19 +116,21 @@ const htmlInterface = (function () {
 
 
     function getCellByCoordinates(x,y) {
+        debugger;
         const index = x + y*3;
 
-        return cells[index];
+        return cellElements[index];
     }
 
-    function setCellState(x,y,state) {
+    function setCellState(state,x,y) {
+        x = parseInt(x);
+        y = parseInt(y);
         let cell = getCellByCoordinates(x,y);
-
         switch (state) {
-            case 'X':
+            case 1:
                 cell.style.backgroundImage = 'url("assets/X.svg")';
                 break;
-            case 'O':
+            case 2:
                 cell.style.backgroundImage = 'url("assets/O.svg")';
                 break;
             default: 
@@ -64,8 +147,6 @@ const htmlInterface = (function () {
 
 
 
-let clicked = function (target) {
-    console.log(target);
-}
 
-htmlInterface.setEventHandler(clicked);
+htmlInterface.setEventHandler(game.attemptMove);
+game.setRenderFunction(htmlInterface.setCellState);
