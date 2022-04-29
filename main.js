@@ -9,6 +9,7 @@ const game = (function () {
     let gameActive = false;
 
     let renderFunction = null;
+    let victoryRenderFunction = null;
     let displayFunction = null;
 
     function resetGame() {
@@ -34,8 +35,8 @@ const game = (function () {
             boardState[x][y] = currentPlayer + 1;
             render(x,y);
             
-
-            switch (checkForEndOfGame()) {
+            let gameCheck = checkForEndOfGame()
+            switch (gameCheck.result) {
                 case 0:
 
                     currentPlayer = 1 - currentPlayer;
@@ -43,15 +44,17 @@ const game = (function () {
                         display("X's MOVE");
                     } else {
                         display("O's MOVE");
-                        window.setTimeout(aiMove,1000);
+                        window.setTimeout(aiMove,Math.random()*500+500);
                     }
                     break;
                 case 1:
                     display('X WINS');
+                    renderVictory(gameCheck.x,gameCheck.y,gameCheck.direction);
                     gameActive = false;
                     break;
                 case 2:
                     display('O WINS');
+                    renderVictory(gameCheck.x,gameCheck.y,gameCheck.direction);
                     gameActive = false;
                     break;
                 case -1:
@@ -266,32 +269,32 @@ const game = (function () {
         // Check for vertical lines
         for (let i = 0; i <= 2; i++) {
             if (boardState[i][0] == boardState[i][1] && boardState[i][0] == boardState[i][2] && boardState[i][0] != 0) {
-                return boardState[i][0];
+                return {result: boardState[i][0], x: i,y: 0, direction:'vertical'};
             }    
         }
         // Check for horizontal lines
         for (let i = 0; i <= 2; i++) {
             if (boardState[0][i] == boardState[1][i] && boardState[0][i] == boardState[2][i] && boardState[0][i] != 0) {
-                return boardState[0][i];
+                return {result: boardState[0][i], x: 0,y: i, direction:'horizontal'};
             }    
         }
         // Check for diagonal lines
         if (boardState[0][0] == boardState[1][1] && boardState[0][0] == boardState[2][2] && boardState[0][0] != 0) {
-            return boardState[0][0];
+            return {result: boardState[0][0],x:0,y:0,direction:'diagonal1'};
         }
         if (boardState[0][2] == boardState[1][1] && boardState[0][2] == boardState[2][0] && boardState[0][2] != 0) {
-            return boardState[0][2];
+            return {result: boardState[0][2],x:0,y:2,direction:'diagonal2'};
         }
         // Check for empty cells
         for (let i = 0; i <= 2; i++) {
             for (let j = 0; j <= 2; j++) {
                 if (boardState[i][j] == 0) {
-                    return 0;
+                    return {result: 0};
                 }
             }
         }
         //No empty cells -- stalemate
-        return -1;
+        return {result: -1};
     }
 
 
@@ -299,6 +302,9 @@ const game = (function () {
 
     function setRenderFunction(rFunction) {
         renderFunction = rFunction;
+    }
+    function setVictoryRenderFunction(vFunction) {
+        victoryRenderFunction = vFunction;
     }
     function setDisplayFunction(dFunction) {
         displayFunction = dFunction;
@@ -310,13 +316,19 @@ const game = (function () {
         }
     }
 
+    function renderVictory(x,y,direction) {
+        if (victoryRenderFunction) {
+            victoryRenderFunction(x,y,direction);
+        }
+    }
+
     function display(text) {
         if (displayFunction) {
             displayFunction(text);            
         }
     }
 
-    return { resetGame, playerMove, setRenderFunction, setDisplayFunction };
+    return { resetGame, playerMove, setRenderFunction, setVictoryRenderFunction, setDisplayFunction };
 })();
 
 
@@ -326,6 +338,9 @@ const htmlInterface = (function () {
     const cellElements = document.querySelectorAll('.cell');
 
     const readoutElement = document.querySelector('.gameReadout');
+
+    const victorySvg = document.querySelector('.victoryLine');
+    const victorySvgPath = document.querySelector('.victoryLine>path');
 
     let clickEventHandler = null;
 
@@ -372,11 +387,30 @@ const htmlInterface = (function () {
         }
     }
 
+    function showVictoryLine(x,y,direction) {
+        debugger;
+        victorySvg.style.display = 'inline';
+        switch (direction) {
+            case 'horizontal':
+                victorySvgPath.setAttribute('d',`M 50 ${100+y*200} L 550 ${100+y*200}`);
+                break;
+            case 'vertical':
+                victorySvgPath.setAttribute('d',`M ${100+x*200} 50 L ${100+x*200} 550`);
+                break;
+            case 'diagonal1':
+                victorySvgPath.setAttribute('d',`M 50 50 L 550 550`);
+                break;
+            case 'diagonal2':
+                victorySvgPath.setAttribute('d',`M 50 550 L 550 50`);
+                break;
+       }
+    }
+
     function setGameReadoutText(text) {
         readoutElement.textContent = text;
     }
 
-    return { setCellState, setGameReadoutText, setEventHandler };
+    return { setCellState, showVictoryLine, setGameReadoutText, setEventHandler };
 })();
 
 
@@ -387,5 +421,6 @@ const htmlInterface = (function () {
 
 htmlInterface.setEventHandler(game.playerMove);
 game.setRenderFunction(htmlInterface.setCellState);
+game.setVictoryRenderFunction(htmlInterface.showVictoryLine);
 game.setDisplayFunction(htmlInterface.setGameReadoutText);
 game.resetGame();

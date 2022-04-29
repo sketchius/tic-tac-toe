@@ -18,22 +18,28 @@ body {
 
 .board {
     height: 600px;
-    width: 600px;
+    width: 612;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-gap:1px;
+    grid-gap: 6px;
 }
 
 .gameReadout {
     font-family: 'Montserrat', sans-serif;
     font-size: 6rem;
-    font-weight: 100;
+    font-weight: 200;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 6px;
+    background-color: #2999a8;
+    color: white;
+    border-radius: 20px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 .cell {
-    background-color: lightblue;
+    background-color: rgb(181, 253, 255);
+    color: #2999a8;
     height: 200px;
     width: 200px;
     display: grid;
@@ -41,11 +47,50 @@ body {
     justify-items: center;
 }
 
+.leftborder {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.topborder {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.rightborder {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.botborder {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
 svg {
 
     height: 150px;
     width: 150px;
 }
+
+.victoryLine {
+    display: none;
+    width:612px;
+    height:612px;
+    position: absolute;
+}
+.victoryLine>path {
+    stroke-width: 40px;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: dash 0.25s linear forwards;
+}
+
+@keyframes dash {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
 
 .svg {
     height: 100px;
